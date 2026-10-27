@@ -2,6 +2,8 @@
 
 **Live on the globe:** <https://maps.ce-net.com/?app=https%3A%2F%2Fleif-rydenfalk.github.io%2Flamppost-twin%2Fapp.json>
 
+![Lamppost 31 on the globe](shot.png)
+
 One real street lamp, one live model, one falsifiable claim: **when does this lamp switch on and off?**
 
 ## The real asset
