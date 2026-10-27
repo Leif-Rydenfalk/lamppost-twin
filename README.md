@@ -39,7 +39,7 @@ Two irradiance estimates are shown:
    used, and its switch time is shown next to the headline. If the cloud model does not beat clear sky, the
    panel says so.
 
-The 24 bars are the next 24 hours of irradiance; the bright markers are the headline switch-on/off, the
+The 24 bars are 12 hours either side of now; the bright markers are the headline switch-on/off, the
 violet markers are the simple model's. The light pool and the luminaire follow the inferred state.
 
 **Uncertainty:** the headline time carries ±10 min from hourly linear interpolation. The simple model's
