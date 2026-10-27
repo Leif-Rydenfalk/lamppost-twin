@@ -287,7 +287,7 @@ export async function start(ctx) {
   }
 
   // two lindens, well to the sides: context, not the subject
-  for (const [x, z] of [[-16, -8.6], [22, -9.0]]) {
+  for (const [x, z] of [[-11.5, -8.8], [11.5, -8.8]]) {
     place([0.30, 4.2, 0.30], [x, 0.1, z], C.trunk);
     place([2.2, 1.3, 2.2], [x, 4.2, z], C.leaf);
     place([1.7, 1.0, 1.7], [x, 5.2, z], C.leaf2);
