@@ -4,6 +4,10 @@
 
 ![Lamppost 31 on the globe](shot.png)
 
+**Listing:** the URL above is the sandbox manifest path on the globe (same renderer, no review step).
+The official `twin_submit` community listing needs an account session; the local account token is
+expired and its refresh returns 400, so that step is pending a fresh sign-in.
+
 One real street lamp, one live model, one falsifiable claim: **when does this lamp switch on and off?**
 
 ## The real asset
