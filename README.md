@@ -1,3 +1,6 @@
+> **Superseded.** This Twinton sandbox twin was the wrong renderer. The cell-based version is
+> <https://leif-rydenfalk.github.io/lamp-studio/> — `street.lamp@1` -> `lamp-gateway` -> `render.scene/1` -> `render-web`.
+
 # Lamppost 31, Unter den Linden — a one-lamp digital twin
 
 **Live on the globe:** <https://maps.ce-net.com/?app=https%3A%2F%2Fleif-rydenfalk.github.io%2Flamppost-twin%2Fapp.json>
