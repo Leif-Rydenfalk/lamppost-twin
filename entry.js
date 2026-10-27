@@ -266,14 +266,24 @@ export async function start(ctx) {
   const place = (...a) => { local(...a).catch(() => {}); };
 
   // ---- the street: a promenade, a kerb, a carriageway, lindens. The lamp is on the promenade edge.
-  place([52, 0.10, 34], [0, -0.10, 0], C.asphalt);
+  place([52, 0.10, 46], [0, -0.10, 0], C.asphalt);
   place([52, 0.18, 13], [0, 0, -6.4], C.stone);              // promenade north of the kerb
   place([52, 0.22, 0.42], [0, 0, 0.22], C.kerb);              // kerb
   place([52, 0.02, 15], [0, 0.02, 8.2], C.asphalt);           // carriageway south
   for (let x = -22; x <= 22; x += 4.5) local([2.2, 0.015, 0.12], [x, 0.04, 9.5], C.line);
 
+  // the far side of the boulevard: three dark masses and a few lit windows, behind the chart
+  for (const [x, z, w, h] of [[-16, -20, 14, 14], [0, -21, 16, 18], [16, -20, 14, 16]]) {
+    place([w, h, 8], [x, 0.0, z], "#141b24");
+    for (let k = 0; k < 3; k++) {
+      const wx = x - w / 2 + 2.2 + k * 4.2;
+      if (Math.abs(wx) < 3.5) continue;
+      place([0.7, 1.0, 0.06], [wx, 4.5 + k * 2.4, z + 4.03], "#f2c76b", { emissive: "#3a2a08" });
+    }
+  }
+
   // two lindens, well to the sides: context, not the subject
-  for (const [x, z] of [[-14.5, -8.6], [14.5, -8.2]]) {
+  for (const [x, z] of [[-16, -8.6], [22, -9.0]]) {
     place([0.30, 4.2, 0.30], [x, 0.1, z], C.trunk);
     place([2.2, 1.3, 2.2], [x, 4.2, z], C.leaf);
     place([1.7, 1.0, 1.7], [x, 5.2, z], C.leaf2);
@@ -309,16 +319,16 @@ export async function start(ctx) {
   S.lamp = L;
 
   // ---- the next-24 h irradiance chart, built from boxes: one bar per hour, a threshold line, two markers.
-  const CHART_Z = -11.45, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 700;
-  place([14.9, 0.16, 1.6], [0, 0.2, CHART_Z], C.chart);
-  place([14.5, 5.9, 0.12], [0, 0.36, CHART_Z - 0.62], "#0a0f15");   // the chart's backboard
-  place([14.5, 0.02, 0.04], [0, CHART_BASE, CHART_Z - 0.52], C.line);
+  const CHART_Z = -11.45, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 8.2;
+  place([14.9, 0.16, 1.6], [CHART_X, 0.2, CHART_Z], C.chart);
+  place([14.5, 4.7, 0.12], [CHART_X, 0.36, CHART_Z - 0.62], "#131b25");   // the chart's backboard
+  place([14.5, 0.02, 0.04], [CHART_X, CHART_BASE, CHART_Z - 0.52], C.line);
   S.chart = { z: CHART_Z, base: CHART_BASE, barW: BAR_W, gap: BAR_GAP, maxW: MAX_W, n: 24 };
   S.bars = new Array(24).fill(null);
   // thresholds at 40 and 60 W/m2, on the same scale as the bars
-  const hScale = 5.2 / MAX_W;   // metres per W/m2
-  place([14.0, 0.035, 0.06], [0, CHART_BASE + THRESH_ON * hScale, CHART_Z], C.barNight, { emissive: "#10205a" });
-  place([14.0, 0.025, 0.06], [0, CHART_BASE + THRESH_OFF * hScale, CHART_Z - 0.18], C.barDay, { emissive: "#3a2a08" });
+  const hScale = 4.2 / MAX_W;   // metres per W/m2
+  place([14.0, 0.035, 0.06], [CHART_X, CHART_BASE + THRESH_ON * hScale, CHART_Z], C.barNight, { emissive: "#10205a" });
+  place([14.0, 0.025, 0.06], [CHART_X, CHART_BASE + THRESH_OFF * hScale, CHART_Z - 0.18], C.barDay, { emissive: "#3a2a08" });
 
   async function rebuildChart() {
     for (const b of S.bars) if (b) { try { ctx.remove(b); } catch (e) {} }
@@ -329,8 +339,8 @@ export async function start(ctx) {
     for (let i = 0; i < 24; i++) {
       const t = start + i * 3600000;
       const g = ghiAt(t);
-      const h = Math.max(0.12, Math.min(5.2, g * hScale));
-      const x = (i - 11.5) * BAR_GAP;
+      const h = Math.max(0.12, Math.min(4.2, g * hScale));
+      const x = CHART_X + (i - 11.5) * BAR_GAP;
       const color = g >= THRESH_OFF ? C.barDay : g < THRESH_ON ? C.barNight : C.barDusk;
       const show = await local([BAR_W, h, 0.5], [x, CHART_BASE, CHART_Z], color, { emissive: g < THRESH_ON ? "#0a1430" : "#1a1406" });
       S.bars[i] = show;
@@ -339,8 +349,8 @@ export async function start(ctx) {
     for (const [tr, color, w, dz] of [[S.nextOn, C.onMark, 0.08, 0.32], [S.nextOff, C.offMark, 0.08, 0.32], [S.twinNextOn, "#c69bff", 0.045, 0.52], [S.twinNextOff, "#7c9cff", 0.045, 0.52]]) {
       if (!tr || tr < now || tr > now + 24 * 3600000) continue;
       const i = (tr - start) / 3600000;
-      const x = (i - 11.5) * BAR_GAP;
-      S.markers.push(await local([w, 5.9, w], [x, CHART_BASE, CHART_Z + dz], color, { emissive: color }));
+      const x = CHART_X + (i - 11.5) * BAR_GAP;
+      S.markers.push(await local([w, 4.5, w], [x, CHART_BASE, CHART_Z + dz], color, { emissive: color }));
     }
   }
 
@@ -435,7 +445,7 @@ export async function start(ctx) {
     const rows = [
       ["state", `${on ? "ON" : "OFF"} · ${S.nowG.toFixed(0)} ext / ${S.nowTwin.toFixed(0)} twin W/m²`],
       ["switch", `${on ? "on since" : "off since"} ${since ? fmtWhen(since.t, Date.now()) : "—"} ±10${vs}`],
-      ["next", `${on ? "off" : "on"} ${next ? fmtWhen(next.t, Date.now()) : "—"} ±10 · burn ${S.burn.toFixed(1)} h`],
+      ["next", `${on ? "off" : "on"} ${next ? fmtWhen(next.t, Date.now()) : "—"} ±10 · burn today ${S.burn.toFixed(1)} h`],
       ["model", mae == null ? "—" : `${modelLabel} ${mae.toFixed(0)} / clear ${clearMae == null ? "—" : clearMae.toFixed(0)} W/m²; twin ${twinTime}${spread}`],
     ];
     ctx.panel({
@@ -443,10 +453,43 @@ export async function start(ctx) {
       sub: `${a.leuchtstelle} · ${a.strasse}, ${a.bezirk} · ${shortType(a.leuchtentyp)} · ${a.status}${S.regLive ? "" : " (last known)"} · checked ${S.error ? "offline" : fmtTime(S.loaded)}`,
       rows,
       actions: [
-        { label: "Recentre", onClick: () => ctx.orbit(LAT, LON, 28, { heading: 128, tilt: 30, min: 6 }) },
+        { label: "Recentre", onClick: () => ctx.orbit(LAT, LON, 28, { heading: 345, tilt: 30, min: 6 }) },
         { label: S.forceClear ? "Twin: use cloud fit" : "Twin: force clear-sky", onClick: async () => { S.forceClear = !S.forceClear; recompute(); setLamp(S.state === "on"); await rebuildChart(); panel(); } },
       ],
+      list: [
+        { name: `${a.leuchtstelle} · ${a.status} · ${shortType(a.leuchtentyp)}`, color: "#ffcf6b", onClick: showAsset },
+        { name: "Sources and assumptions · GDI · Open-Meteo · 40/60 W/m²", color: "#7fd6ff", onClick: showSources },
+      ],
       source: "Asset: Berlin GDI Straßenbeleuchtung, WFS beleuchtung, feature 153492 (dl-de/by-2-0). Irradiance and cloud: Open-Meteo (CC BY 4.0). Sun position: NOAA. The 40/60 W/m² thresholds and the 8.0 m mast are assumptions, not Berlin's published settings. Irradiance is a model, not a sensor on this mast.",
+    });
+  }
+
+  function showAsset() {
+    const a = S.asset;
+    ctx.panel({
+      title: `Asset · ${a.leuchtstelle}`,
+      rows: [
+        ["type", a.leuchtentyp || "—"],
+        ["street", `${a.strasse || "Unter den Linden"}, ${a.bezirk || "Mitte"}`],
+        ["arm", `${(a.rotation ?? 174.09).toFixed(2)}°`],
+        ["register", `${a.status || "—"}${S.regLive ? "" : " · last known"}`],
+      ],
+      actions: [{ label: "Back to the lamp", onClick: panel }],
+      list: [{ name: "Back to the lamp", color: "#ffcf6b", onClick: panel }],
+    });
+  }
+
+  function showSources() {
+    ctx.panel({
+      title: "Sources and assumptions",
+      rows: [
+        ["asset", "Berlin GDI WFS beleuchtung · dl-de/by-2-0"],
+        ["irradiance", "Open-Meteo · CC BY 4.0 · model, not a sensor"],
+        ["switch", "40 on / 60 off W/m² · assumed, not Berlin's setting"],
+        ["scene", "8.0 m mast assumed · schematic, not a survey"],
+      ],
+      actions: [{ label: "Back to the lamp", onClick: panel }],
+      list: [{ name: "Back to the lamp", color: "#7fd6ff", onClick: panel }],
     });
   }
 
@@ -476,7 +519,7 @@ export async function start(ctx) {
   }
 
   // first paint: the place, a low 3/4 view, then the panel fills in when the sources answer
-  ctx.orbit(LAT, LON, 28, { heading: 128, tilt: 30, min: 6 });
+  ctx.orbit(LAT, LON, 28, { heading: 345, tilt: 30, min: 6 });
   panel();
   await load();
 
@@ -501,9 +544,9 @@ export async function start(ctx) {
   });
 
   ctx.steps([
-    { title: "One real lamp", text: `This is asset ${ASSET0.leuchtstelle}: a ${ASSET0.leuchtentyp} on ${ASSET0.strasse}, ${ASSET0.bezirk}, at 52.51767572 N, 13.39770114 E. Berlin's street-lighting register says it is ${ASSET0.status.toLowerCase()}. The register records the asset; it does not record whether the lamp is lit.`, at: [LAT, LON, 24], view: { heading: 122, tilt: 22, min: 5 } },
-    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are the next 24 hours.`, at: [LAT, LON, 32], view: { heading: 140, tilt: 28, min: 6 } },
-    { title: "A model you can disagree with", text: `Clear sky is Haurwitz; cloud attenuation is Kasten–Czeplak or a local coefficient fitted on the previous 36 hours. All four candidates are scored on the last 12 daylight hours against Open-Meteo. The headline uses Open-Meteo; the winning simple model is the cross-check, and if it does not beat clear sky the panel says so.`, at: [LAT, LON, 44], view: { heading: 160, tilt: 34, min: 8 } },
-    { title: "What is not claimed", text: `Open-Meteo is a model, not a sensor on this mast. The 40/60 W/m² thresholds and the 8.0 m mast are assumptions. "In Betrieb" means not reported broken, not lit. The headline time carries ±10 min from hourly interpolation; the simple model's spread is shown separately. The falsifiable claim is the switch time: stand at the kerb and watch.`, at: [LAT, LON, 28], view: { heading: 118, tilt: 26, min: 5 } },
+    { title: "One real lamp", text: `This is asset ${ASSET0.leuchtstelle}: a ${ASSET0.leuchtentyp} on ${ASSET0.strasse}, ${ASSET0.bezirk}, at 52.51767572 N, 13.39770114 E. Berlin's street-lighting register says it is ${ASSET0.status.toLowerCase()}. The register records the asset; it does not record whether the lamp is lit.`, at: [LAT, LON, 24], view: { heading: 350, tilt: 22, min: 5 } },
+    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are the next 24 hours.`, at: [LAT, LON, 32], view: { heading: 340, tilt: 28, min: 6 } },
+    { title: "A model you can disagree with", text: `Clear sky is Haurwitz; cloud attenuation is Kasten–Czeplak or a local coefficient fitted on the previous 36 hours. All four candidates are scored on the last 12 daylight hours against Open-Meteo. The headline uses Open-Meteo; the winning simple model is the cross-check, and if it does not beat clear sky the panel says so.`, at: [LAT, LON, 44], view: { heading: 350, tilt: 34, min: 8 } },
+    { title: "What is not claimed", text: `Open-Meteo is a model, not a sensor on this mast. The 40/60 W/m² thresholds and the 8.0 m mast are assumptions. "In Betrieb" means not reported broken, not lit. The headline time carries ±10 min from hourly interpolation; the simple model's spread is shown separately. The falsifiable claim is the switch time: stand at the kerb and watch.`, at: [LAT, LON, 28], view: { heading: 345, tilt: 26, min: 5 } },
   ]);
 }
