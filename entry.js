@@ -541,7 +541,6 @@ export async function start(ctx) {
         S.state = s;
         recompute();
         setLamp(S.state === "on");
-        rebuildChart().catch(() => {});
         panel();
       }
     }
