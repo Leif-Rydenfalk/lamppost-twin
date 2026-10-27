@@ -261,7 +261,11 @@ export async function start(ctx) {
     burn: 0, mae: null, loaded: Date.now(), error: null, regLive: true, chart: [], bars: [], markers: [], lamp: null,
   };
 
-  const local = (size, at, color, opts = {}) => ctx.box({ frame: f, size, at, color, emissive: opts.emissive || "#000000", heading: opts.heading || 0 });
+  const dim = (hex, f = 0.3) => {
+    const n = parseInt(String(hex).slice(1), 16);
+    return "#" + [16, 8, 0].map((sh) => Math.round(((n >> sh) & 255) * f).toString(16).padStart(2, "0")).join("");
+  };
+  const local = (size, at, color, opts = {}) => ctx.box({ frame: f, size, at, color, emissive: opts.emissive || dim(color), heading: opts.heading || 0 });
   // static geometry needs no handle; a rejected box must not become an unhandled rejection
   const place = (...a) => { local(...a).catch(() => {}); };
 
@@ -289,7 +293,7 @@ export async function start(ctx) {
     place([1.7, 1.0, 1.7], [x, 5.2, z], C.leaf2);
   }
   // two benches, turned to face the road
-  for (const x of [7.5, 11.5]) {
+  for (const x of [-6.5, 4.5]) {
     place([2.2, 0.10, 0.55], [x, 0.55, -3.2], C.bench);
     place([2.2, 0.55, 0.10], [x, 0.9, -3.45], C.bench);
     for (const dx of [-0.85, 0.85]) local([0.10, 0.55, 0.10], [x + dx, 0.1, -3.2], C.metal);
@@ -319,7 +323,7 @@ export async function start(ctx) {
   S.lamp = L;
 
   // ---- the next-24 h irradiance chart, built from boxes: one bar per hour, a threshold line, two markers.
-  const CHART_Z = -11.45, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 8.2;
+  const CHART_Z = -9.8, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 8.2;
   place([14.9, 0.16, 1.6], [CHART_X, 0.2, CHART_Z], C.chart);
   place([14.5, 4.7, 0.12], [CHART_X, 0.36, CHART_Z - 0.62], "#131b25");   // the chart's backboard
   place([14.5, 0.02, 0.04], [CHART_X, CHART_BASE, CHART_Z - 0.52], C.line);
@@ -339,7 +343,7 @@ export async function start(ctx) {
     for (let i = 0; i < 24; i++) {
       const t = start + i * 3600000;
       const g = ghiAt(t);
-      const h = Math.max(0.12, Math.min(4.2, g * hScale));
+      const h = Math.max(0.18, Math.min(4.2, g * hScale));
       const x = CHART_X + (i - 11.5) * BAR_GAP;
       const color = g >= THRESH_OFF ? C.barDay : g < THRESH_ON ? C.barNight : C.barDusk;
       const show = await local([BAR_W, h, 0.5], [x, CHART_BASE, CHART_Z], color, { emissive: g < THRESH_ON ? "#0a1430" : "#1a1406" });
