@@ -261,7 +261,7 @@ export async function start(ctx) {
     burn: 0, mae: null, loaded: Date.now(), error: null, regLive: true, chart: [], bars: [], markers: [], lamp: null,
   };
 
-  const dim = (hex, f = 0.3) => {
+  const dim = (hex, f = 0.6) => {
     const n = parseInt(String(hex).slice(1), 16);
     return "#" + [16, 8, 0].map((sh) => Math.round(((n >> sh) & 255) * f).toString(16).padStart(2, "0")).join("");
   };
@@ -323,7 +323,7 @@ export async function start(ctx) {
   S.lamp = L;
 
   // ---- the next-24 h irradiance chart, built from boxes: one bar per hour, a threshold line, two markers.
-  const CHART_Z = -9.8, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 8.2;
+  const CHART_Z = -9.8, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 0;
   place([14.9, 0.16, 1.6], [CHART_X, 0.2, CHART_Z], C.chart);
   place([14.5, 4.7, 0.12], [CHART_X, 0.36, CHART_Z - 0.62], "#131b25");   // the chart's backboard
   place([14.5, 0.02, 0.04], [CHART_X, CHART_BASE, CHART_Z - 0.52], C.line);
@@ -339,7 +339,7 @@ export async function start(ctx) {
     for (const m of S.markers) if (m) { try { ctx.remove(m); } catch (e) {} }
     S.bars = new Array(24).fill(null); S.markers = [];
     if (!S.wx) return;
-    const now = Date.now(), start = Math.floor(now / 3600000) * 3600000;
+    const now = Date.now(), start = Math.floor(now / 3600000) * 3600000 - 12 * 3600000;
     for (let i = 0; i < 24; i++) {
       const t = start + i * 3600000;
       const g = ghiAt(t);
@@ -349,9 +349,12 @@ export async function start(ctx) {
       const show = await local([BAR_W, h, 0.5], [x, CHART_BASE, CHART_Z], color, { emissive: g < THRESH_ON ? "#0a1430" : "#1a1406" });
       S.bars[i] = show;
     }
-    // marker on the first upcoming on/off transition inside the next 24 h: headline (bright) and twin (violet)
-    for (const [tr, color, w, dz] of [[S.nextOn, C.onMark, 0.08, 0.32], [S.nextOff, C.offMark, 0.08, 0.32], [S.twinNextOn, "#c69bff", 0.045, 0.52], [S.twinNextOff, "#7c9cff", 0.045, 0.52]]) {
-      if (!tr || tr < now || tr > now + 24 * 3600000) continue;
+    // the current hour is the middle of the 24 bars
+    S.markers.push(await local([0.05, 4.4, 0.05], [CHART_X + (12 - 11.5) * BAR_GAP, CHART_BASE, CHART_Z + 0.62], C.nowMark, { emissive: C.nowMark }));
+    // the switch events inside the 12 h either side: the current/last one in a quieter colour, the next ones bright
+    const lastOn = S.lastChange && S.lastChange.to === "on" ? S.lastChange : null;
+    for (const [tr, color, w, dz] of [[lastOn, "#b98d39", 0.05, 0.58], [S.twinLastOn, "#8f74c2", 0.035, 0.68], [S.nextOn, C.onMark, 0.08, 0.32], [S.nextOff, C.offMark, 0.08, 0.32], [S.twinNextOn, "#c69bff", 0.045, 0.52], [S.twinNextOff, "#7c9cff", 0.045, 0.52]]) {
+      if (!tr || tr < start || tr > start + 24 * 3600000) continue;
       const i = (tr - start) / 3600000;
       const x = CHART_X + (i - 11.5) * BAR_GAP;
       S.markers.push(await local([w, 4.5, w], [x, CHART_BASE, CHART_Z + dz], color, { emissive: color }));
@@ -549,7 +552,7 @@ export async function start(ctx) {
 
   ctx.steps([
     { title: "One real lamp", text: `This is asset ${ASSET0.leuchtstelle}: a ${ASSET0.leuchtentyp} on ${ASSET0.strasse}, ${ASSET0.bezirk}, at 52.51767572 N, 13.39770114 E. Berlin's street-lighting register says it is ${ASSET0.status.toLowerCase()}. The register records the asset; it does not record whether the lamp is lit.`, at: [LAT, LON, 24], view: { heading: 350, tilt: 22, min: 5 } },
-    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are the next 24 hours.`, at: [LAT, LON, 32], view: { heading: 340, tilt: 28, min: 6 } },
+    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are 12 hours either side of now.`, at: [LAT, LON, 32], view: { heading: 340, tilt: 28, min: 6 } },
     { title: "A model you can disagree with", text: `Clear sky is Haurwitz; cloud attenuation is Kasten–Czeplak or a local coefficient fitted on the previous 36 hours. All four candidates are scored on the last 12 daylight hours against Open-Meteo. The headline uses Open-Meteo; the winning simple model is the cross-check, and if it does not beat clear sky the panel says so.`, at: [LAT, LON, 44], view: { heading: 350, tilt: 34, min: 8 } },
     { title: "What is not claimed", text: `Open-Meteo is a model, not a sensor on this mast. The 40/60 W/m² thresholds and the 8.0 m mast are assumptions. "In Betrieb" means not reported broken, not lit. The headline time carries ±10 min from hourly interpolation; the simple model's spread is shown separately. The falsifiable claim is the switch time: stand at the kerb and watch.`, at: [LAT, LON, 28], view: { heading: 345, tilt: 26, min: 5 } },
   ]);
