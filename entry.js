@@ -252,14 +252,17 @@ export function fmtWhen(ms, now) {
 // ---------------------------------------------------------------- the app
 
 export async function start(ctx) {
-  const f = await ctx.local(LAT, LON);
-  ctx.base("density", false); ctx.base("twins", false); ctx.base("lanes", false); ctx.base("flows", false); ctx.base("joined", false); ctx.base("imagery", false);
-
   const S = {
     asset: { ...ASSET0 }, wx: null, fit: null, model: null, forceClear: false,
     state: "off", transitions: [], nowG: 0, nowTwin: 0, lastChange: null, nextOn: null, nextOff: null,
     burn: 0, mae: null, loaded: Date.now(), error: null, regLive: true, chart: [], bars: [], markers: [], lamp: null,
   };
+
+  // fly to the lamp and show the frame before building 100 boxes: the place is the first thing the viewer sees
+  ctx.orbit(LAT, LON, 28, { heading: 345, tilt: 30, min: 6 });
+  panel();
+  const f = await ctx.local(LAT, LON);
+  ctx.base("density", false); ctx.base("twins", false); ctx.base("lanes", false); ctx.base("flows", false); ctx.base("joined", false); ctx.base("imagery", false);
 
   const dim = (hex, f = 0.6) => {
     const n = parseInt(String(hex).slice(1), 16);
@@ -523,9 +526,6 @@ export async function start(ctx) {
     panel();
   }
 
-  // first paint: the place, a low 3/4 view, then the panel fills in when the sources answer
-  ctx.orbit(LAT, LON, 28, { heading: 345, tilt: 30, min: 6 });
-  panel();
   await load();
 
   let last = Date.now(), lastChart = 0;
