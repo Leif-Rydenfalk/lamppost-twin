@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lamppost 31, Unter den Linden — a one-lamp twin</title>
+<style>
+  :root { --bg:#070b12; --ink:#e8eef7; --dim:#8b98a9; --line:#1b2430; --amber:#ffd27a; --violet:#c69bff; --cyan:#7fd6ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:56px 24px 80px; }
+  h1 { font-size:clamp(30px,6vw,54px); line-height:1.05; letter-spacing:-0.02em; margin:0 0 12px; }
+  h1 span { color:var(--amber); }
+  p.lede { color:var(--dim); font-size:19px; max-width:64ch; }
+  a { color:var(--cyan); }
+  .cta { display:inline-block; margin:22px 0 8px; padding:14px 22px; border-radius:10px; background:var(--amber); color:#171204; font-weight:700; text-decoration:none; }
+  .cta:hover { filter:brightness(1.08); }
+  .meta { color:var(--dim); font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:34px 0; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:18px; background:#0b111a; }
+  .card b { display:block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+  .card .v { font-size:22px; font-weight:650; }
+  .card .s { color:var(--dim); font-size:13px; }
+  h2 { font-size:22px; margin:38px 0 10px; }
+  ul { padding-left:20px; } li { margin:6px 0; }
+  code { font:13px ui-monospace,SFMono-Regular,Menlo,monospace; background:#111a25; padding:2px 6px; border-radius:5px; }
+  .amber { color:var(--amber); } .violet { color:var(--violet); } .cyan { color:var(--cyan); }
+  footer { border-top:1px solid var(--line); margin-top:44px; padding-top:18px; color:var(--dim); font-size:13px; }
+  img.shot { width:100%; border-radius:12px; border:1px solid var(--line); margin:18px 0 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>One lamp.<br><span>Lamppost 31, Unter den Linden.</span></h1>
+  <p class="lede">A deliberately small digital twin: a real Berlin street-lighting asset, a real-time
+    irradiance model at its exact point, and one claim you can check from the kerb — when does it switch on?</p>
+  <a class="cta" href="https://maps.ce-net.com/?app=https%3A%2F%2Fleif-rydenfalk.github.io%2Flamppost-twin%2Fapp.json">Open it on the globe →</a>
+  <div class="meta">Asset <code>43378-2110031-00</code> · 52.51767572 N, 13.39770114 E · Berlin GDI, WFS <code>beleuchtung</code> · dl-de/by-2-0</div>
+
+  <div class="grid">
+    <div class="card"><b>Real</b><div class="v">mast + arm</div><div class="s">Lichtmast mit Auslegerleuchte, arm at 174.09°, register says In Betrieb.</div></div>
+    <div class="card"><b>Live</b><div class="v">Open-Meteo</div><div class="s">Modelled global horizontal irradiance and cloud at this point, refreshed every 10 minutes.</div></div>
+    <div class="card"><b>Twin</b><div class="v">40 / 60 W/m²</div><div class="s">Photocell on/off with hysteresis. The thresholds are an assumption, not a Berlin setting.</div></div>
+    <div class="card"><b>Error</b><div class="v">shown</div><div class="s">Four simple models scored on the last 12 daylight hours. The winner is the cross-check, not the headline.</div></div>
+  </div>
+
+  <h2>What the twin claims — and what it does not</h2>
+  <p>The <strong class="amber">headline switch time</strong> comes from Open-Meteo's irradiance, linearly
+    interpolated between hours (±10 min). The <strong class="violet">violet marker</strong> is the simpler
+    clear-sky + cloud model, scored against Open-Meteo; its spread against the headline is in the panel.
+    The green-ish bars are the next 24 hours of irradiance; the 40 and 60 W/m² threshold lines are on the
+    same scale.</p>
+  <ul>
+    <li>Open-Meteo is a <strong>model</strong>, not a sensor on this mast. No observation is claimed.</li>
+    <li>The 40/60 W/m² thresholds and the 8.0 m mast are <strong>assumptions</strong>.</li>
+    <li><code>In Betrieb</code> means “not reported broken”, <strong>not</strong> “lit”.</li>
+    <li>The scene is a schematic of the promenade, kerb, carriageway and lindens, not a survey.</li>
+  </ul>
+
+  <h2>Sources</h2>
+  <ul>
+    <li>Asset register: <a href="https://gdi.berlin.de/services/wfs/beleuchtung">Berlin GDI WFS beleuchtung</a>, feature <code>beleuchtung.153492</code>, dl-de/by-2-0.</li>
+    <li>Irradiance and cloud: <a href="https://open-meteo.com/">Open-Meteo</a>, CC BY 4.0.</li>
+    <li>Sun position: NOAA solar-position equations. Clear sky: Haurwitz (1945). Cloud attenuation: Kasten &amp; Czeplak (1980).</li>
+  </ul>
+
+  <footer>Manifest: <a href="app.json">app.json</a> · Source: <a href="entry.js">entry.js</a> ·
+    Cell <code>globe.lamppost@1</code>. A view cell on the Twinton globe, not a Rust process.</footer>
+</main>
+</body>
+</html>

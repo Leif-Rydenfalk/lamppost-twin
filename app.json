@@ -1,0 +1,14 @@
+{
+  "id": "lamppost-43378-2110031",
+  "title": "Lamppost 31, Unter den Linden",
+  "what": "One real Berlin street lamp, asset 43378-2110031-00 on Unter den Linden, with a modelled photocell switch: real sun geometry and Open-Meteo cloud cover, four scored candidates, the switch time and its uncertainty. The register proves the asset; the twin infers the light.",
+  "kind": "twin",
+  "cell": "globe.lamppost@1",
+  "needs": ["local", "box", "orbit", "panel", "steps", "data", "base"],
+  "data": [
+    "https://gdi.berlin.de/services/wfs/beleuchtung?service=WFS&version=2.0.0&request=GetFeature&typeNames=beleuchtung:beleuchtung&featureID=beleuchtung.153492&outputFormat=application/json",
+    "https://api.open-meteo.com/v1/forecast?latitude=52.51767572&longitude=13.39770114&current=is_day,shortwave_radiation,cloud_cover,temperature_2m,weather_code&hourly=shortwave_radiation,cloud_cover,temperature_2m,precipitation,weather_code&past_days=2&forecast_days=2&timezone=UTC"
+  ],
+  "models": [],
+  "entry": "entry.js"
+}
