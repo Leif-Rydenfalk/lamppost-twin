@@ -30,12 +30,12 @@ const ASSET0 = {
 };
 
 const C = {
-  sky: "#070b12", asphalt: "#0d1116", stone: "#2b3037", kerb: "#454c54", line: "#b9b2a0",
-  mast: "#2f3a34", collar: "#4c554e", metal: "#6d756f", headOff: "#666c66", headOn: "#ffd27a",
+  sky: "#070b12", asphalt: "#161b21", stone: "#3b424b", kerb: "#59616a", line: "#c9c2ad",
+  mast: "#3f4a43", collar: "#59635b", metal: "#77817b", headOff: "#70766f", headOn: "#ffd27a",
   bulbOff: "#2a2d30", bulbOn: "#ffe6a0", poolOff: "#24211b", poolMidOff: "#2a251c", poolInOff: "#312a1f",
   poolOn: "#6b4d18", poolMidOn: "#a06f1e", poolInOn: "#d99b2e",
-  trunk: "#3f3225", leaf: "#24452f", leaf2: "#2c5338", bench: "#3f3225",
-  chart: "#141a22", barDay: "#f2c76b", barDusk: "#9a8f7a", barNight: "#3d6bff",
+  trunk: "#4f3f2d", leaf: "#2f5b3f", leaf2: "#386b49", bench: "#57452f",
+  chart: "#1b2530", barDay: "#f2c76b", barDusk: "#9a8f7a", barNight: "#4c7dff",
   onMark: "#ffcf6b", offMark: "#7fd6ff", nowMark: "#ffffff",
 };
 
@@ -278,7 +278,7 @@ export async function start(ctx) {
 
   // the far side of the boulevard: three dark masses and a few lit windows, behind the chart
   for (const [x, z, w, h] of [[-16, -20, 14, 14], [0, -21, 16, 18], [16, -20, 14, 16]]) {
-    place([w, h, 8], [x, 0.0, z], "#141b24");
+    place([w, h, 8], [x, 0.0, z], "#232c38", { emissive: "#18212b" });
     for (let k = 0; k < 3; k++) {
       const wx = x - w / 2 + 2.2 + k * 4.2;
       if (Math.abs(wx) < 3.5) continue;
@@ -315,6 +315,7 @@ export async function start(ctx) {
     head: await local([0.72, 0.17, 0.34], [arm.x * 1.56, MAST_M - 0.18, arm.z * 1.56], C.headOff, { heading: armHeading }),
     bulb: await local([0.46, 0.06, 0.22], [arm.x * 1.56, MAST_M - 0.24, arm.z * 1.56], C.bulbOff, { heading: armHeading }),
     cell: await local([0.18, 0.08, 0.18], [arm.x * 1.56, MAST_M - 0.01, arm.z * 1.56], "#20242a", { heading: armHeading }),
+    halo: await local([17, 0.008, 13], [arm.x * 1.56, 0.185, arm.z * 1.56], "#2a1d0b", { emissive: "#2a1d0b" }),
     poolOut: await local([6.6, 0.02, 5.6], [arm.x * 1.56, 0.19, arm.z * 1.56], C.poolOff),
     poolMid: await local([3.5, 0.03, 3.0], [arm.x * 1.56, 0.20, arm.z * 1.56], C.poolMidOff),
     poolIn: await local([1.6, 0.04, 1.4], [arm.x * 1.56, 0.21, arm.z * 1.56], C.poolInOff),
@@ -325,7 +326,7 @@ export async function start(ctx) {
   // ---- the next-24 h irradiance chart, built from boxes: one bar per hour, a threshold line, two markers.
   const CHART_Z = -9.8, CHART_BASE = 0.36, BAR_W = 0.42, BAR_GAP = 0.56, MAX_W = 320, CHART_X = 0;
   place([14.9, 0.16, 1.6], [CHART_X, 0.2, CHART_Z], C.chart);
-  place([14.5, 4.7, 0.12], [CHART_X, 0.36, CHART_Z - 0.62], "#131b25");   // the chart's backboard
+  place([14.5, 4.7, 0.12], [CHART_X, 0.36, CHART_Z - 0.62], "#1b2530", { emissive: "#101720" });   // the chart's backboard
   place([14.5, 0.02, 0.04], [CHART_X, CHART_BASE, CHART_Z - 0.52], C.line);
   S.chart = { z: CHART_Z, base: CHART_BASE, barW: BAR_W, gap: BAR_GAP, maxW: MAX_W, n: 24 };
   S.bars = new Array(24).fill(null);
@@ -432,6 +433,7 @@ export async function start(ctx) {
     const L = S.lamp;
     ctx.set(L.head, { color: on ? C.headOn : C.headOff });
     ctx.set(L.bulb, { color: on ? C.bulbOn : C.bulbOff });
+    ctx.set(L.halo, { color: on ? "#3a280d" : "#1d1710" });
     ctx.set(L.poolOut, { color: on ? C.poolOn : C.poolOff });
     ctx.set(L.poolMid, { color: on ? C.poolMidOn : C.poolMidOff });
     ctx.set(L.poolIn, { color: on ? C.poolInOn : C.poolInOff });
@@ -551,8 +553,8 @@ export async function start(ctx) {
   });
 
   ctx.steps([
-    { title: "One real lamp", text: `This is asset ${ASSET0.leuchtstelle}: a ${ASSET0.leuchtentyp} on ${ASSET0.strasse}, ${ASSET0.bezirk}, at 52.51767572 N, 13.39770114 E. Berlin's street-lighting register says it is ${ASSET0.status.toLowerCase()}. The register records the asset; it does not record whether the lamp is lit.`, at: [LAT, LON, 24], view: { heading: 350, tilt: 22, min: 5 } },
-    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are 12 hours either side of now.`, at: [LAT, LON, 32], view: { heading: 340, tilt: 28, min: 6 } },
+    { title: "One real lamp", text: `This is asset ${ASSET0.leuchtstelle}: a ${ASSET0.leuchtentyp} on ${ASSET0.strasse}, ${ASSET0.bezirk}, at 52.51767572 N, 13.39770114 E. Berlin's street-lighting register says it is ${ASSET0.status}. The register records the asset; it does not record whether the lamp is lit.`, at: [LAT, LON, 24], view: { heading: 350, tilt: 22, min: 5 } },
+    { title: "The switch is the twin", text: `The twin models the photocell: on below ${THRESH_ON} W/m² of global horizontal irradiance, off above ${THRESH_OFF} (hysteresis). The headline uses Open-Meteo's irradiance for this exact point; the violet markers are the simpler cloud model's switch, shown so you can see the disagreement. The bars are 12 hours either side of now; the white line is now, the bright and violet marks the headline and the simple model's switch.`, at: [LAT, LON, 32], view: { heading: 340, tilt: 28, min: 6 } },
     { title: "A model you can disagree with", text: `Clear sky is Haurwitz; cloud attenuation is Kasten–Czeplak or a local coefficient fitted on the previous 36 hours. All four candidates are scored on the last 12 daylight hours against Open-Meteo. The headline uses Open-Meteo; the winning simple model is the cross-check, and if it does not beat clear sky the panel says so.`, at: [LAT, LON, 44], view: { heading: 350, tilt: 34, min: 8 } },
     { title: "What is not claimed", text: `Open-Meteo is a model, not a sensor on this mast. The 40/60 W/m² thresholds and the 8.0 m mast are assumptions. "In Betrieb" means not reported broken, not lit. The headline time carries ±10 min from hourly interpolation; the simple model's spread is shown separately. The falsifiable claim is the switch time: stand at the kerb and watch.`, at: [LAT, LON, 28], view: { heading: 345, tilt: 26, min: 5 } },
   ]);
