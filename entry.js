@@ -33,7 +33,7 @@ const C = {
   sky: "#070b12", asphalt: "#161b21", stone: "#3b424b", kerb: "#59616a", line: "#c9c2ad",
   mast: "#3f4a43", collar: "#59635b", metal: "#77817b", headOff: "#70766f", headOn: "#ffd27a",
   bulbOff: "#2a2d30", bulbOn: "#ffe6a0", poolOff: "#24211b", poolMidOff: "#2a251c", poolInOff: "#312a1f",
-  poolOn: "#6b4d18", poolMidOn: "#a06f1e", poolInOn: "#d99b2e",
+  poolOn: "#4a3510", poolMidOn: "#8a5f16", poolInOn: "#d99b2e",
   trunk: "#4f3f2d", leaf: "#2f5b3f", leaf2: "#386b49", bench: "#57452f",
   chart: "#1b2530", barDay: "#f2c76b", barDusk: "#9a8f7a", barNight: "#4c7dff",
   onMark: "#ffcf6b", offMark: "#7fd6ff", nowMark: "#ffffff",
@@ -315,7 +315,6 @@ export async function start(ctx) {
     head: await local([0.72, 0.17, 0.34], [arm.x * 1.56, MAST_M - 0.18, arm.z * 1.56], C.headOff, { heading: armHeading }),
     bulb: await local([0.46, 0.06, 0.22], [arm.x * 1.56, MAST_M - 0.24, arm.z * 1.56], C.bulbOff, { heading: armHeading }),
     cell: await local([0.18, 0.08, 0.18], [arm.x * 1.56, MAST_M - 0.01, arm.z * 1.56], "#20242a", { heading: armHeading }),
-    halo: await local([17, 0.008, 13], [arm.x * 1.56, 0.185, arm.z * 1.56], "#2a1d0b", { emissive: "#2a1d0b" }),
     poolOut: await local([6.6, 0.02, 5.6], [arm.x * 1.56, 0.19, arm.z * 1.56], C.poolOff),
     poolMid: await local([3.5, 0.03, 3.0], [arm.x * 1.56, 0.20, arm.z * 1.56], C.poolMidOff),
     poolIn: await local([1.6, 0.04, 1.4], [arm.x * 1.56, 0.21, arm.z * 1.56], C.poolInOff),
@@ -433,7 +432,6 @@ export async function start(ctx) {
     const L = S.lamp;
     ctx.set(L.head, { color: on ? C.headOn : C.headOff });
     ctx.set(L.bulb, { color: on ? C.bulbOn : C.bulbOff });
-    ctx.set(L.halo, { color: on ? "#3a280d" : "#1d1710" });
     ctx.set(L.poolOut, { color: on ? C.poolOn : C.poolOff });
     ctx.set(L.poolMid, { color: on ? C.poolMidOn : C.poolMidOff });
     ctx.set(L.poolIn, { color: on ? C.poolInOn : C.poolInOff });
