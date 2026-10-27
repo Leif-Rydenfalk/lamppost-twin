@@ -315,9 +315,9 @@ export async function start(ctx) {
     head: await local([0.72, 0.17, 0.34], [arm.x * 1.56, MAST_M - 0.18, arm.z * 1.56], C.headOff, { heading: armHeading }),
     bulb: await local([0.46, 0.06, 0.22], [arm.x * 1.56, MAST_M - 0.24, arm.z * 1.56], C.bulbOff, { heading: armHeading }),
     cell: await local([0.18, 0.08, 0.18], [arm.x * 1.56, MAST_M - 0.01, arm.z * 1.56], "#20242a", { heading: armHeading }),
-    poolOut: await local([6.6, 0.02, 5.6], [arm.x * 1.56, 0.19, arm.z * 1.56], C.poolOff),
-    poolMid: await local([3.5, 0.03, 3.0], [arm.x * 1.56, 0.20, arm.z * 1.56], C.poolMidOff),
-    poolIn: await local([1.6, 0.04, 1.4], [arm.x * 1.56, 0.21, arm.z * 1.56], C.poolInOff),
+    poolOut: await local([5.8, 0.02, 5.0], [arm.x * 1.56, 0.19, arm.z * 1.56], C.poolOff),
+    poolMid: await local([3.2, 0.03, 2.8], [arm.x * 1.56, 0.20, arm.z * 1.56], C.poolMidOff),
+    poolIn: await local([1.5, 0.04, 1.3], [arm.x * 1.56, 0.21, arm.z * 1.56], C.poolInOff),
   };
   place([0.31, 0.08, 0.31], [0, MAST_M + 0.42, 0], C.collar);
   S.lamp = L;
@@ -350,14 +350,14 @@ export async function start(ctx) {
       S.bars[i] = show;
     }
     // the current hour is the middle of the 24 bars
-    S.markers.push(await local([0.05, 4.4, 0.05], [CHART_X + (12 - 11.5) * BAR_GAP, CHART_BASE, CHART_Z + 0.62], C.nowMark, { emissive: C.nowMark }));
+    S.markers.push(await local([0.025, 3.2, 0.025], [CHART_X + (12 - 11.5) * BAR_GAP, CHART_BASE, CHART_Z + 0.62], C.nowMark, { emissive: C.nowMark }));
     // the switch events inside the 12 h either side: the current/last one in a quieter colour, the next ones bright
     const lastOn = S.lastChange && S.lastChange.to === "on" ? S.lastChange : null;
-    for (const [tr, color, w, dz] of [[lastOn, "#b98d39", 0.05, 0.58], [S.twinLastOn, "#8f74c2", 0.035, 0.68], [S.nextOn, C.onMark, 0.08, 0.32], [S.nextOff, C.offMark, 0.08, 0.32], [S.twinNextOn, "#c69bff", 0.045, 0.52], [S.twinNextOff, "#7c9cff", 0.045, 0.52]]) {
+    for (const [tr, color, w, dz] of [[lastOn, "#b98d39", 0.04, 0.58], [S.twinLastOn, "#8f74c2", 0.03, 0.68], [S.nextOn, C.onMark, 0.07, 0.32], [S.nextOff, C.offMark, 0.07, 0.32], [S.twinNextOn, "#c69bff", 0.04, 0.52], [S.twinNextOff, "#7c9cff", 0.04, 0.52]]) {
       if (!tr || tr < start || tr > start + 24 * 3600000) continue;
       const i = (tr - start) / 3600000;
       const x = CHART_X + (i - 11.5) * BAR_GAP;
-      S.markers.push(await local([w, 4.5, w], [x, CHART_BASE, CHART_Z + dz], color, { emissive: color }));
+      S.markers.push(await local([w, 4.2, w], [x, CHART_BASE, CHART_Z + dz], color, { emissive: color }));
     }
   }
 
@@ -482,7 +482,6 @@ export async function start(ctx) {
         ["register", `${a.status || "—"}${S.regLive ? "" : " · last known"}`],
       ],
       actions: [{ label: "Back to the lamp", onClick: panel }],
-      list: [{ name: "Back to the lamp", color: "#ffcf6b", onClick: panel }],
     });
   }
 
@@ -496,7 +495,6 @@ export async function start(ctx) {
         ["scene", "8.0 m mast assumed · schematic, not a survey"],
       ],
       actions: [{ label: "Back to the lamp", onClick: panel }],
-      list: [{ name: "Back to the lamp", color: "#7fd6ff", onClick: panel }],
     });
   }
 
